@@ -1,0 +1,39 @@
+de novo 알고리즘
+
+genome assembly를 진행하는 방법에는 2가지 알고리즘이 존재한다.
+
+sanger wequencing 방법을 이용하여  human genome project를 수행했던 OLC 방법과 많은 short read 데이터의 throughput을 assembly 하기 위해서 만든 De brujin 방법이 있다.
+
+OLC (Overlap Layout Consensus) 알고리즘 : Celera assemble, AMOS, Phrap, Newbler 등이 있다. 현재 NGS 플랫폼에선 454의 newbler가 OLC방법을 사용중이다.
+
+De brujin graph : 처음 만든 Velvet부터 현재 모든 short read data의 어셈블리는 de brujin 그래프 알고리즘을 사용하고 있다. 어셈블리 프로그램에는 soapDenovo, Allpaths-LG, Abyss등이 있다.
+
+De brujin 방식의 장점
+ 1. pairwise overlap을 계산하지 않아 다른 어셈블리가 수행하는 시간보다 많은 시간과 단계를 단축할 수 있다. 
+ 2. 해밀턴 경로보다 오일러 경로를 찾을 수 있는 효율적인 방법이다.
+ 3. 반복과정에 민감하다.
+
+De brujin 방식의 단점
+ 1. 매우 많은 오일러 경로가 있어 실제 genome을 나타내는 하나를 찾기 위해 가지고 있는 이론보다 더 많은 어셈블리의 조건을 찾기가 어렵다.
+ 2. K-mers의 조건에 따라 assembly sequence error에 민감하다. k-mer의 오류가 그래프를 복잡하게 만들고 에러 정정이 De brujin 어셈블리의 중요한 단계이다.
+ 3. 반복에 민감하여 이 민감도를 해결하기 위해 k-mers를 추가하게 되고 이로 인해 그래프의 복잡성이 증가한다.
+ 4. overlap이 균일한 k-mer 길이 sequence로 제한된다.
+ #K-mers : genomics에서 어떤 sequence가 주어졌을 때, 길이가 k 가능한 모든 substring의 집합
+          ex) sequence -> ATCGAAGGTCGT 일 때 k = 4 이면 4-kmers는 
+              ATCH TCGA CGAA GAAG AAGG AGGT GGTC GTCG TCGT 이다.
+
+OLC 알고리즘의 장점
+ 1. overlap, 레이아웃 및 consensus 단계 때문에 OLC 알고리즘은 자연스럽게 모듈 알고리즘 설계를 할 수 있다.
+ 2. overlap의 길이를 다르게 할 수 있다.
+
+OLC 알고리즘의 단점
+ 1. overlap 단계 수행시 매우 많은 시간과 컴퓨팅 자원을 필요로 한다.
+ 2. 오일러 경로보다 해밀턴 경로를 식별하는게 어렵다.
+
+아호코라식 알고리즘
+
+아호코라식 알고리즘은 현재 광범위하게 알려진 거의 유일한 일대다 패턴매칭 알고리즘이다.
+일대다 패턴매칭이란 문자열 하나 안에 여러 각각의 문자열이 존재하는지를 다 판별하는 것이다.
+문자열 S에서 찾을 단어 집합 W의 각 단어 w1, w2, ... , wk를 찾는다고 가정하면 S의 길이를  N, 각 단어의 길이를 m1, m2 , ... , mk라 하면 완전탐색으로 찾게 될 경우 O(N(m1+m2+ ... + mk))이지만 아호 코라식으로 찾게 되면 S를 한 번만 훑어서 결과를 내기 때문에 O(N+m1+m2+...+mk)이다. 
+아호코라식 알고리즘엔 트라이(Trie)가 사용된다. 트라이(Trie)란 문자열을 저장하고 효율적으로 탐색하기 위한 트리 형태의 자료구조 이다. 트리의 루트에서부터 자식노드들을 따라가면서 생성된 문자열들이 트라이 자료구조에 저장된다. 저장된 단어는 끝을 표시하는 변수를 추가해서 저장된 단어의 끝을 구분할 수 있다. 
+
