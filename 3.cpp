@@ -3,6 +3,8 @@
 #include <string>
 #include <random>
 #include <time.h>
+#include <map>
+#include <algorithm>
 using namespace std;
 //2018112005 컴퓨터공학과 신승윤
 
@@ -172,17 +174,62 @@ void BruteForceRecon(string ref, vector<string> &shortReads){
   return ;
 }
 
+string ShortestCommonSuperstring(vector<string> &shortReads){
+  string shortest_sup;
+  int n = shortReads.size();
+  vector<int> perm(n);
+  vector<int> start(n);
+  for(int i=0; i<n; i++) perm[i]=i;
+  for(int i=0; i<n; i++) start[i]=i;
+  while (next_permutation(perm.begin(), perm.end())) {
+    for (auto& i : perm)
+        cout << i << "  ";
+        cout << '\n';
+  }
+}
+
 void denovo(vector<string> &shortReads){
+  cout << "denovo" << endl;
+  map <string, vector<string> > G;
+  int k = shortReads[0].length();
+  for(auto read : shortReads){
+    // read :: "ATC...TGC"
+    string left = read.substr(0,k-1);
+    string right = read.substr(1,k-1);
+
+    G[left].push_back(right);
+
+  }
+
+  // Graph Print
+  for(auto read : shortReads){
+    string left = read.substr(0,k-1);
+    string right = read.substr(1,k-1);
+
+    cout << left << " -> ";
+    for(int i=0; i<G[left].size(); i++){
+      cout << G[left][i] << " ";
+    }
+    cout << endl;
+  }
+
+
   return;
 }
 
 int main(){
-  init(1000000); // random Sequence generate
-  reviseSeq(); // duplicate removal
+  //init(1000000); // random Sequence generate
+  //reviseSeq(); // duplicate removal
 
   string ref = import();
-  vector<string> shortReads = Sequencer(40000, 30, ref);
-  BruteForceRecon(ref, shortReads);
+  //vector<string> shortReads = Sequencer(40000, 30, ref);
+  //string arr[] = {"a_lon", "_long", "long_", "ong_l","ng_lo","g_lon",
+  //                "_long","long_","ong_t","ng_ti","g_tim","_time"};
+  string arr[] = {"ACGGATGAGC", "GAGCGGA", "GAGCGAG"};
+  // Initialize vector with a string array
+  vector<string> shortReads(arr, arr + sizeof(arr)/sizeof(string));
+  //BruteForceRecon(ref, shortReads);
+  cout << ShortestCommonSuperstring(shortReads) <<endl;
 
   return 0;
 }
