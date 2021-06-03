@@ -174,18 +174,63 @@ void BruteForceRecon(string ref, vector<string> &shortReads){
   return ;
 }
 
-string ShortestCommonSuperstring(vector<string> &shortReads){
-  string shortest_sup;
-  int n = shortReads.size();
-  vector<int> perm(n);
-  vector<int> start(n);
-  for(int i=0; i<n; i++) perm[i]=i;
-  for(int i=0; i<n; i++) start[i]=i;
-  while (next_permutation(perm.begin(), perm.end())) {
-    for (auto& i : perm)
-        cout << i << "  ";
-        cout << '\n';
+int overlap(string s1, string s2){
+  int start = 0;
+
+  start = s1.find(s2.substr(0,s2.length()-1));
+  if(start == -1){
+    if(s1.length() >= s2.length()){
+      for(int i=1;i<s2.length();i++)
+        if(s1.substr(s1.length()-s2.length()+i, s2.length()-i)  == s2.substr(0,s2.length()-i)){
+          return s1.length()-s2.length()+i;
+        }
+    }
+    else{
+      for(int i=1;i<s1.length();i++)
+        if(s1.substr(i,s1.length()-i)  == s2.substr(0,s1.length()-i)){
+          return i;
+        }
+    }
+    return start;
   }
+  return start;
+}
+
+string ShortestCommonSuperstring(vector<string> &shortReads){
+  string shortest_sup = "x";
+  int n = shortReads.size();
+  vector<int> perm;
+  vector<int> start(n);
+  for(int i=0; i<n; i++) perm.push_back(i);
+  sort(perm.begin(), perm.end());
+  do {
+      string sup = shortReads[perm[0]];
+      cout << "sup:: "<< sup << " "<< perm[0]<<perm[1] << perm[2]<<endl;
+      cout << sup << endl;
+      int indent =0;
+      for(int i=0; i<n-1; i++){
+        string s1 = shortReads[perm[i]];
+        string s2 = shortReads[perm[i+1]];
+        int olen = overlap(s1, s2);
+        if(olen==-1){
+          indent += s1.length();
+          sup += s2;
+        }
+        else{
+          indent += olen;
+          sup += s2.substr(s1.length()-olen,s2.length()-s1.length()+olen);
+        }
+        for(int i=0; i<indent; i++) cout << " ";
+        cout << s2 << endl;
+      }
+      cout << sup << " "<< sup.length() << endl;
+      if(shortest_sup =="x" || sup.length() < shortest_sup.length()){
+        shortest_sup = sup;
+        cout << "shortest :: "<< shortest_sup << " "<<sup.length()<< endl;
+      }
+      cout << endl;
+    }while (next_permutation(perm.begin(), perm.end()));
+  return shortest_sup;
 }
 
 void denovo(vector<string> &shortReads){
