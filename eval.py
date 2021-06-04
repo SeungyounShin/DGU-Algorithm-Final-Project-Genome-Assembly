@@ -8,12 +8,13 @@ f.close()
 
 print("+ ref   : ",ref[:10],'...')
 print("+ recon : ",recon[:10],'...')
+print(len(ref),len(recon))
 
 best_acc = 0
 ind = 0
 
 for i in range(len(recon)):
-    refSub = ref[i+1:]
+    refSub = ref[i:]
     if(len(refSub)<1):
         break
 
@@ -24,7 +25,7 @@ for i in range(len(recon)):
             matched += 1
 
     acc = matched/len(ref)
-
+    #print(acc)
     if(acc > best_acc):
         best_acc = acc
         ind = i
