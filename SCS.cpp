@@ -5,6 +5,7 @@
 #include <time.h>
 #include <map>
 #include <algorithm>
+#include <tuple>
 using namespace std;
 //2018112005 컴퓨터공학과 신승윤
 
@@ -133,47 +134,6 @@ vector<string> Sequencer(int n, int k, string s){
   return rtn;
 }
 
-void BruteForceRecon(string ref, vector<string> &shortReads){
-  // reconstruct DNA
-  // init
-  clock_t start = clock();
-  int k = shortReads[0].length();
-  int n = shortReads.size();
-  char recon[ref.length()];
-  cout << "init done!" << endl;
-  for(int i=0; i<ref.length(); i++) recon[i]='A';
-  // matching
-  for(int readInd =0; readInd<shortReads.size(); readInd++){
-    if(readInd % 1000 == 0) cout << readInd << " progress!" << endl;
-    string read = shortReads[readInd];
-    for(int j=0; j<ref.length()-k-1; j++){
-      //sliding window
-      int diff = 0;
-      // diff calculation
-      for(int ind=0; ind<k; ind++){
-        if(diff > 2) break;
-        if(read[ind] != ref[j+ind]){
-          diff += 1;
-        }
-      }
-      // match
-      if(diff <= 2){
-        for(int i=0; i<k; i++) recon[j+i] = read[i];
-      }
-    }
-  }
-  // matching accuracy
-  int matched = 0;
-  for(int i=0; i<ref.length(); i++){
-    if(ref[i] == recon[i]) matched += 1;
-  }
-  clock_t end = clock();
-  double duration = (double)(end - start) / CLOCKS_PER_SEC;
-  cout << " Time spend        :: " << duration << endl;
-  cout << " matching accuracy :: " << matched << "/" << ref.length() << endl;
-  return ;
-}
-
 int overlap(string s1, string s2,int min_length){
   int start = 0;
   //cout << s1 << " " << s2 << endl;
@@ -197,58 +157,64 @@ int overlap(string s1, string s2,int min_length){
   return start;
 }
 
-vector <int> pick_maximal_overlap(vector <string> reads, int k){
+tuple <int,int,int> pick_maximal_overlap(vector <string> reads, int k, bool prnt){
+  bool print = prnt;
   vector <int> out;
   int best_olen = 0;
   int reada, readb;
 
-  //cout << " pick maximal overlap :: reads " << endl;
-  //for(auto s : reads)cout << " " << s << endl;
-  //cout << "=====" << endl;
+  if(print) cout << " pick maximal overlap :: reads " << endl;
+  if(print) for(auto s : reads)cout << " " << s << endl;
+  if(print) cout << "=====" << endl;
 
   map <string, vector<string> > index;
   for(auto read : reads){
     for(int i=0; i<read.length()-k+1; i++){
       index[read.substr(i,k)].push_back(read);
-      //cout << read.substr(i,k) << " ";
-    }//cout << endl;
+      if(print) cout << read.substr(i,k) << " ";
+    }if(print) cout << endl;
   }
 
   int i,j;i=0;j=0;
+  int olenInd = 0;
+  string tmpa; string tmpb;
   for(auto r : reads){
-    //cout << r << " " << r.substr(r.length()-k,k) << endl;
+    if(print)cout << r << " " << r.substr(r.length()-k,k) << endl;
     for(auto o : index[r.substr(r.length()-k,k)] ){
       if(r != o){
-        //cout << " overlap find " << r << " " << o << endl;
-        int olen = overlap(r,o,o.length());
-        if(olen > best_olen){
-          vector <string>::iterator itera = find(reads.begin(), reads.end(), r);
-          vector <string>::iterator iterb = find(reads.begin(), reads.end(), o);
-          reada = distance(reads.begin(), itera);
-          readb = distance(reads.begin(), iterb);
-          //cout << "best olen " << olen<< " "<< r << " "<<o<< " " << reada << " " << readb << endl;
-          best_olen = olen;
+        int olen = overlap(r,o,k);
+        int overlap = r.length() - olen;
+        if(print) cout << " + overlap " << overlap<< " "<< r << " "<<o<< " " << endl;
+        if(olen <= 0) overlap = 0;
+        if(overlap > best_olen){
+          tmpa = r; tmpb = o;
+          if(print) cout << "best overlap " << overlap<< " "<< r << " "<<o<< " " << endl;
+          best_olen = overlap;
+          olenInd = olen;
         }
       }
     }
   }
-  out.push_back(reada);
-  out.push_back(readb);
-  out.push_back(best_olen);
-  return out;
+  vector <string>::iterator itera = find(reads.begin(), reads.end(), tmpa);
+  vector <string>::iterator iterb = find(reads.begin(), reads.end(), tmpb);
+  reada = distance(reads.begin(), itera);
+  readb = distance(reads.begin(), iterb);
+  return make_tuple(reada, readb, olenInd);
 }
 
 string greedySCS(vector <string> shortReads, int k){
+  bool print =true;
   clock_t start = clock();
-  vector<int> out = pick_maximal_overlap(shortReads, k);
-  int reada = out[0]; int readb = out[1]; int olen = out[2];
+  tuple<int,int,int> out = pick_maximal_overlap(shortReads, k, print);
+  int reada = get<0>(out); int readb = get<1>(out); int olen =get<2>(out);
   int count = 0;
+  cout << shortReads[reada] << " " << shortReads[readb] << " "<<olen << endl;
   while(olen>0){
-    cout << count << " "<< shortReads.size() << endl;
-    //cout << reada << " "<< readb << " "<< olen << endl;
+    cout << "progress :: "<<count << " "<< shortReads.size() << endl;
+    if(print) cout << reada << " "<< readb << " "<< olen << endl;
     string read_a = shortReads[reada];
     string read_b = shortReads[readb];
-    //cout << read_a << " " << read_b << endl;
+    if(print) cout << read_a << " " << read_b << endl;
     if(reada > readb){
       shortReads.erase(shortReads.begin()+reada);
       shortReads.erase(shortReads.begin()+readb);
@@ -257,8 +223,8 @@ string greedySCS(vector <string> shortReads, int k){
       shortReads.erase(shortReads.begin()+reada);
     }
     shortReads.push_back(read_a.substr(0, olen) + read_b);
-    vector<int> tmp = pick_maximal_overlap(shortReads, k);
-    reada = tmp[0]; readb = tmp[1]; olen = tmp[2];
+    tuple<int,int,int> tmp = pick_maximal_overlap(shortReads, k, print);
+    reada = get<0>(tmp); readb = get<1>(tmp); olen =get<2>(tmp);
     count += 1;
   }
   string ret = "";
@@ -313,45 +279,18 @@ string ShortestCommonSuperstring(vector<string> &shortReads){
   return shortest_sup;
 }
 
-void denovo(vector<string> &shortReads){
-  cout << "denovo" << endl;
-  map <string, vector<string> > G;
-  int k = shortReads[0].length();
-  for(auto read : shortReads){
-    // read :: "ATC...TGC"
-    string left = read.substr(0,k-1);
-    string right = read.substr(1,k-1);
-
-    G[left].push_back(right);
-
-  }
-
-  // Graph Print
-  for(auto read : shortReads){
-    string left = read.substr(0,k-1);
-    string right = read.substr(1,k-1);
-
-    cout << left << " -> ";
-    for(int i=0; i<G[left].size(); i++){
-      cout << G[left][i] << " ";
-    }
-    cout << endl;
-  }
-
-
-  return;
-}
-
 int main(){
-  init(10000); // random Sequence generate
-  reviseSeq(); // duplicate removal
+  //init(100000); // random Sequence generate
+  //reviseSeq(); // duplicate removal
 
-  string ref = import();
-  vector<string> shortReads = Sequencer(400, 30, ref);
+  //string ref = import();
+  string ref = "AGATAAATGGGCCCTGCGG";
+  //vector<string> shortReads = Sequencer(4000, 30, ref);
   //string arr[] = {"ACGGATGAGC", "GAGCGGA", "GAGCGAG"};
+  string arr[] = {"AGATAACTG", "TAACTGGGC", "TAACTGGGCCC","AACTGGGC","TGGGCCCTACG"};
   // Initialize vector with a string array
-  //vector<string> shortReads(arr, arr + sizeof(arr)/sizeof(string));
-  //BruteForceRecon(ref, shortReads);
+  vector<string> shortReads(arr, arr + sizeof(arr)/sizeof(string));
+
   string recon = greedySCS(shortReads, 2);
   cout << recon.length() << endl;
   int matched = 0;
@@ -359,5 +298,7 @@ int main(){
     if(ref[i] == recon[i]) matched += 1;
   }
   cout << matched << "/" << ref.length() << endl;
+  cout << ref << endl;
+  cout << recon << endl;
   return 0;
 }
