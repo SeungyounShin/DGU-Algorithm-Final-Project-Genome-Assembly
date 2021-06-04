@@ -174,10 +174,11 @@ void BruteForceRecon(string ref, vector<string> &shortReads){
   return ;
 }
 
-int overlap(string s1, string s2){
+int overlap(string s1, string s2,int min_length){
   int start = 0;
-
-  start = s1.find(s2.substr(0,s2.length()-1));
+  //cout << s1 << " " << s2 << endl;
+  start = s1.find(s2.substr(0,min_length));
+  //cout << start << endl;
   if(start == -1){
     if(s1.length() >= s2.length()){
       for(int i=1;i<s2.length();i++)
@@ -196,22 +197,99 @@ int overlap(string s1, string s2){
   return start;
 }
 
+vector <int> pick_maximal_overlap(vector <string> reads, int k){
+  vector <int> out;
+  int best_olen = 0;
+  int reada, readb;
+
+  //cout << " pick maximal overlap :: reads " << endl;
+  //for(auto s : reads)cout << " " << s << endl;
+  //cout << "=====" << endl;
+
+  map <string, vector<string> > index;
+  for(auto read : reads){
+    for(int i=0; i<read.length()-k+1; i++){
+      index[read.substr(i,k)].push_back(read);
+      //cout << read.substr(i,k) << " ";
+    }//cout << endl;
+  }
+
+  int i,j;i=0;j=0;
+  for(auto r : reads){
+    //cout << r << " " << r.substr(r.length()-k,k) << endl;
+    for(auto o : index[r.substr(r.length()-k,k)] ){
+      if(r != o){
+        //cout << " overlap find " << r << " " << o << endl;
+        int olen = overlap(r,o,o.length());
+        if(olen > best_olen){
+          vector <string>::iterator itera = find(reads.begin(), reads.end(), r);
+          vector <string>::iterator iterb = find(reads.begin(), reads.end(), o);
+          reada = distance(reads.begin(), itera);
+          readb = distance(reads.begin(), iterb);
+          //cout << "best olen " << olen<< " "<< r << " "<<o<< " " << reada << " " << readb << endl;
+          best_olen = olen;
+        }
+      }
+    }
+  }
+  out.push_back(reada);
+  out.push_back(readb);
+  out.push_back(best_olen);
+  return out;
+}
+
+string greedySCS(vector <string> shortReads, int k){
+  clock_t start = clock();
+  vector<int> out = pick_maximal_overlap(shortReads, k);
+  int reada = out[0]; int readb = out[1]; int olen = out[2];
+  int count = 0;
+  while(olen>0){
+    cout << count << " "<< shortReads.size() << endl;
+    //cout << reada << " "<< readb << " "<< olen << endl;
+    string read_a = shortReads[reada];
+    string read_b = shortReads[readb];
+    //cout << read_a << " " << read_b << endl;
+    if(reada > readb){
+      shortReads.erase(shortReads.begin()+reada);
+      shortReads.erase(shortReads.begin()+readb);
+    }else{
+      shortReads.erase(shortReads.begin()+readb);
+      shortReads.erase(shortReads.begin()+reada);
+    }
+    shortReads.push_back(read_a.substr(0, olen) + read_b);
+    vector<int> tmp = pick_maximal_overlap(shortReads, k);
+    reada = tmp[0]; readb = tmp[1]; olen = tmp[2];
+    count += 1;
+  }
+  string ret = "";
+  for(auto s : shortReads){
+    ret += s;
+  }
+  clock_t end = clock();
+  cout << "Time spend :: "<< end-start<<endl;
+  return ret;
+}
+
 string ShortestCommonSuperstring(vector<string> &shortReads){
+  bool print = true;
   string shortest_sup = "x";
   int n = shortReads.size();
   vector<int> perm;
-  vector<int> start(n);
   for(int i=0; i<n; i++) perm.push_back(i);
   sort(perm.begin(), perm.end());
+  clock_t start = clock();
+  int count =0;
   do {
+      cout << count << endl;
+      count++;
       string sup = shortReads[perm[0]];
-      cout << "sup:: "<< sup << " "<< perm[0]<<perm[1] << perm[2]<<endl;
-      cout << sup << endl;
+      if(print) cout << "sup:: "<< sup << " "<< perm[0]<<perm[1] << perm[2]<<endl;
+      if(print) cout << sup << endl;
       int indent =0;
       for(int i=0; i<n-1; i++){
         string s1 = shortReads[perm[i]];
         string s2 = shortReads[perm[i+1]];
-        int olen = overlap(s1, s2);
+        int olen = overlap(s1, s2, s2.length());
         if(olen==-1){
           indent += s1.length();
           sup += s2;
@@ -220,16 +298,18 @@ string ShortestCommonSuperstring(vector<string> &shortReads){
           indent += olen;
           sup += s2.substr(s1.length()-olen,s2.length()-s1.length()+olen);
         }
-        for(int i=0; i<indent; i++) cout << " ";
-        cout << s2 << endl;
+        if(print) for(int i=0; i<indent; i++) cout << " ";
+        if(print) cout << s2 << endl;
       }
-      cout << sup << " "<< sup.length() << endl;
+      if(print) cout << sup << " "<< sup.length() << endl;
       if(shortest_sup =="x" || sup.length() < shortest_sup.length()){
         shortest_sup = sup;
-        cout << "shortest :: "<< shortest_sup << " "<<sup.length()<< endl;
+         if(print) cout << "shortest :: "<< shortest_sup << " "<<sup.length()<< endl;
       }
-      cout << endl;
+      if(print) cout << endl;
     }while (next_permutation(perm.begin(), perm.end()));
+  clock_t end = clock();
+  cout << "Time spend :: "<< end-start<<endl;
   return shortest_sup;
 }
 
@@ -263,18 +343,21 @@ void denovo(vector<string> &shortReads){
 }
 
 int main(){
-  //init(1000000); // random Sequence generate
-  //reviseSeq(); // duplicate removal
+  init(10000); // random Sequence generate
+  reviseSeq(); // duplicate removal
 
   string ref = import();
-  //vector<string> shortReads = Sequencer(40000, 30, ref);
-  //string arr[] = {"a_lon", "_long", "long_", "ong_l","ng_lo","g_lon",
-  //                "_long","long_","ong_t","ng_ti","g_tim","_time"};
-  string arr[] = {"ACGGATGAGC", "GAGCGGA", "GAGCGAG"};
+  vector<string> shortReads = Sequencer(400, 30, ref);
+  //string arr[] = {"ACGGATGAGC", "GAGCGGA", "GAGCGAG"};
   // Initialize vector with a string array
-  vector<string> shortReads(arr, arr + sizeof(arr)/sizeof(string));
+  //vector<string> shortReads(arr, arr + sizeof(arr)/sizeof(string));
   //BruteForceRecon(ref, shortReads);
-  cout << ShortestCommonSuperstring(shortReads) <<endl;
-
+  string recon = greedySCS(shortReads, 2);
+  cout << recon.length() << endl;
+  int matched = 0;
+  for(int i=0; i<ref.length(); i++){
+    if(ref[i] == recon[i]) matched += 1;
+  }
+  cout << matched << "/" << ref.length() << endl;
   return 0;
 }
