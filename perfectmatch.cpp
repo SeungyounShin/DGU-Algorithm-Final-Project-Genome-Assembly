@@ -5,7 +5,7 @@
 #include <random>
 #include <ctime>
 using namespace std;
-#define MISSMATCH 3 //미스매치 수
+#define D 3 //미스매치 수
 
 
 
@@ -18,7 +18,7 @@ vector<vector<int>> filltable(int k, int n, vector<vector<int>> table) {//테이
     fin.open("Reference_DNA_sequence.txt");
     getline(fin, reference);
     for (int i = 0; i < reference.size(); i++) {
-        for (int j = 0; j < k / (MISSMATCH + 1); j++) {
+        for (int j = 0; j < k / (D + 1); j++) {
             sumofascii += int(reference[i + j]); //아스키값 총합을 인덱스로
         }
         table[sumofascii].push_back(i); //테이블에 넣음
@@ -45,17 +45,17 @@ void perfectMatch(int k, int n, vector<vector<int>> table) { //퍼펙트매칭�
     for (int i = 0; i < n; i++) { //shortread 개수만큼
         getline(fin1, shortread);
         isExit = 0;
-        for (int j = 0; j < (MISSMATCH + 1); j++) { //partition 만큼 반복
+        for (int j = 0; j < (D + 1); j++) { //partition 만큼 반복
             tmp = 0;
             if (isExit == 1) { //퍼펙트매치 이미 발견했을경우
                 break;
             }
-            for (int l = 0; l < k / (MISSMATCH + 1); l++) { //partition 길이만큼 반복
+            for (int l = 0; l < k / (D + 1); l++) { //partition 길이만큼 반복
                 //cout << shortread[j * k / (MISSMATCH + 1) + l];
-                tmp += int(shortread[j * k / (MISSMATCH + 1) + l]);
+                tmp += int(shortread[j * k / (D + 1) + l]);
             }
             for (int m = 0; m < table[tmp].size(); m++) { //테이블 index 개수만큼
-                for (int n = table[tmp][m]; n < table[tmp][m] + k / (MISSMATCH + 1); n++) { //index와 shortread 비교
+                for (int n = table[tmp][m]; n < table[tmp][m] + k / (D + 1); n++) { //index와 shortread 비교
                     if (shortread[cnt] != reference[n]) {
                         cnt = 0;
                         break;
@@ -64,7 +64,7 @@ void perfectMatch(int k, int n, vector<vector<int>> table) { //퍼펙트매칭�
                         cnt++;
                     }
                 }
-                if (cnt == k / (MISSMATCH + 1)) { //만약 partition이 perfect match면
+                if (cnt == k / (D + 1)) { //만약 partition이 perfect match면
                     // cout << shortread << endl;
                     for (int o = 0; o < shortread.size(); o++) { // 복원될 string에 넣음
                         reconstruct[table[tmp][m] + o] = shortread[o];
@@ -150,7 +150,7 @@ void Reconstruct(int k, int n) { //brute force 로 복원하는 함수
                     cnt++;
                 }
             }
-            if (cnt <= 2) { //miss match 2개까지 허용
+            if (cnt <= D) { //miss match D 개까지 허용
                 for (int l = 0; l < k; l++) {
                     
                     reconstruct[j + l] = shortread[l];
