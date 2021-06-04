@@ -40,7 +40,7 @@ void perfectMatch(int k, int n, vector<vector<int>> table) { //퍼펙트매칭�
     fout.open("Reconstruct_DNA_sequence_" + to_string(k) + "_" + to_string(n) + ".txt");
     string reconstruct;
     getline(fin2, reference);
-    reconstruct = reference; //고쳐야할것같음
+    reconstruct = reference;
     
     for (int i = 0; i < n; i++) { //shortread 개수만큼
         getline(fin1, shortread);
