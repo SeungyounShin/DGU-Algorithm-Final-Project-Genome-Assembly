@@ -5,12 +5,12 @@
 #include <random>
 #include <ctime>
 using namespace std;
-#define MISSMATCH 3
+#define MISSMATCH 3 //미스매치 수
 
 
 
 
-vector<vector<int>> filltable(int k, int n, vector<vector<int>> table) {
+vector<vector<int>> filltable(int k, int n, vector<vector<int>> table) {//테이블생성함수
     
     ifstream fin;
     string reference;
@@ -19,7 +19,7 @@ vector<vector<int>> filltable(int k, int n, vector<vector<int>> table) {
     getline(fin, reference);
     for (int i = 0; i < reference.size(); i++) {
         for (int j = 0; j < k / (MISSMATCH + 1); j++) {
-            sumofascii += int(reference[i+j]); //아스키값 총합을 인덱스로
+            sumofascii += int(reference[i + j]); //아스키값 총합을 인덱스로
         }
         table[sumofascii].push_back(i); //테이블에 넣음
         //cout << sumofascii << endl;
@@ -28,11 +28,11 @@ vector<vector<int>> filltable(int k, int n, vector<vector<int>> table) {
     return table;
 }
 
-void perfectMatch(int k, int n, vector<vector<int>> table){
-    ifstream fin1,fin2;
+void perfectMatch(int k, int n, vector<vector<int>> table) { //퍼펙트매칭함수
+    ifstream fin1, fin2;
     ofstream fout; //ofstream 형식 변수 선언
-    string shortread,reference;
-    int tmp=0;
+    string shortread, reference;
+    int tmp = 0;
     int cnt = 0;
     int isExit = 0;
     fin1.open("ShortRead" + to_string(k) + "_" + to_string(n) + ".txt"); //해당 파일 열거나 없으면 생성
@@ -45,7 +45,7 @@ void perfectMatch(int k, int n, vector<vector<int>> table){
     for (int i = 0; i < n; i++) { //shortread 개수만큼
         getline(fin1, shortread);
         isExit = 0;
-        for (int j = 0; j < (MISSMATCH+1); j++) { //partition 만큼 반복
+        for (int j = 0; j < (MISSMATCH + 1); j++) { //partition 만큼 반복
             tmp = 0;
             if (isExit == 1) { //퍼펙트매치 이미 발견했을경우
                 break;
@@ -67,7 +67,7 @@ void perfectMatch(int k, int n, vector<vector<int>> table){
                 if (cnt == k / (MISSMATCH + 1)) { //만약 partition이 perfect match면
                     // cout << shortread << endl;
                     for (int o = 0; o < shortread.size(); o++) { // 복원될 string에 넣음
-                        reconstruct[table[tmp][m]+o] = shortread[o];
+                        reconstruct[table[tmp][m] + o] = shortread[o];
                         //cout << shortread[o];
                     }
                     
@@ -111,7 +111,7 @@ void MyDNA(string s, char Nucleic[], int k, int n) { //k 마다 1개씩 다르�
     fout << s;
     fout.close(); //파일닫기
 }
-void ShortRead(int k, int n) {
+void ShortRead(int k, int n) { //shortread 생성
     ofstream fout;
     ifstream fin;
     string shortread, s;
@@ -130,7 +130,7 @@ void ShortRead(int k, int n) {
     fout.close(); //파일닫기
 }
 
-void Reconstruct(int k, int n) {
+void Reconstruct(int k, int n) { //brute force 로 복원하는 함수
     ofstream fout; //ofstream 형식 변수 선언
     ifstream fin1, fin2;  //ifstream 형식 변수 선언
     string shortread, reference;
@@ -164,7 +164,7 @@ void Reconstruct(int k, int n) {
     fout.close(); //파일닫기
 }
 
-void Result(int k, int n) {
+void Result(int k, int n) { //일치율 출력
     ifstream fin1, fin2;  //ifstream 형식 변수 선언
     string mydna, reconstruct;
     int cnt = 0; //틀린 개수 count
@@ -223,8 +223,8 @@ int main() {
     table.resize(1000001);
     cout << "Perfect Matching Algorithm" << endl; //퍼펙트매칭
     start = clock();
-    table=filltable(L, M,table); //테이블채우기
-    perfectMatch(L, M,table); //매칭하기
+    table = filltable(L, M, table); //테이블채우기
+    perfectMatch(L, M, table); //매칭하기
     end = clock();
     cout << "복원하는 데 걸리는 시간 : " << (double)(end - start) / CLOCKS_PER_SEC << "s" << "\n" << endl;
     Result(L, M);
