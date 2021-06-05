@@ -11,20 +11,20 @@ using namespace std;
 
 string import(){
   string line;
-  ifstream file("ref_10000.txt");
+  ifstream file("testdna.txt");
   getline (file,line);
   //cout << line << endl;
   file.close();
   return line;
 }
 
-void ShortRead(int L, int M,int N) { //shortread 생성
+void ShortRead(int L, int M) { //shortread 생성
     ofstream fout;
     ifstream fin;
     string shortread, s;
     int idx;
     srand(time(NULL));
-    fin.open("ref_10000.txt"); //해당 파일 열거나 없으면 생성
+    fin.open("testdna.txt"); //해당 파일 열거나 없으면 생성
     getline(fin, s); //str 받아오기
     fout.open("shortread_" + to_string(L) + "_" + to_string(M) + ".txt"); //해당 파일 열거나 없으면 생성
     for (int i = 0; i < M; i++) {
@@ -37,7 +37,7 @@ void ShortRead(int L, int M,int N) { //shortread 생성
     fout.close(); //파일닫기
 }
 
-vector<string> importReads(int L, int M, int N){
+vector<string> importReads(int L, int M){
   vector<string> ret;
   ifstream file("shortread_" + to_string(L) + "_" + to_string(M) + ".txt");
 
@@ -208,11 +208,11 @@ vector <string> greedySCS(vector <string> shortReads, int k){
 int main(){
   int M, L,N;
   L = 30;
-  M = 400;
-  N = 1000;
+  M = 1000;
   string ref = import();
-  ShortRead(L, M, N);
-  vector<string> shortReads = importReads(L, M, N);
+  N = ref.length();
+  ShortRead(L, M);
+  vector<string> shortReads = importReads(L, M);
 
   cout << " # of ShortReads :: "<< shortReads.size() << endl;
   //string ref = "AGATAAATGGGCCCTGCG";
