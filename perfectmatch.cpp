@@ -1,3 +1,11 @@
+//
+//  main.cpp
+//  perfectmatch
+//
+//  Created by 이다연 on 2021/06/06.
+//  Copyright © 2021 이다연. All rights reserved.
+//
+
 //2018112017 이다연
 #include <iostream>
 #include <fstream>
@@ -6,7 +14,7 @@
 #include <ctime>
 using namespace std;
 #define D 2 //미스매치 수
-
+#define TABLE 1000001
 
 
 
@@ -20,6 +28,7 @@ vector<vector<int>> filltable(int L, int M,int N, vector<vector<int>> table) {//
     for (int i = 0; i < reference.size(); i++) {
         for (int j = 0; j < L / (D + 1); j++) {
             sumofascii += int(reference[i + j]); //아스키값 총합을 인덱스로
+            sumofascii%=TABLE; //테이블 크기보다 클수있으므로 나눔
         }
         table[sumofascii].push_back(i); //테이블에 넣음
         //cout << sumofascii << endl;
@@ -53,6 +62,7 @@ void perfectMatch(int L, int M, int N, vector<vector<int>> table) { //퍼펙트�
             for (int l = 0; l < L / (D + 1); l++) { //partition 길이만큼 반복
                 //cout << shortread[j * k / (MISSMATCH + 1) + l];
                 tmp += int(shortread[j * L / (D + 1) + l]);
+                tmp%=TABLE; //테이블 크기보다 클수있으므로 나눔
             }
             for (int m = 0; m < table[tmp].size(); m++) { //테이블 index 개수만큼
                 for (int n = table[tmp][m]; n < table[tmp][m] + L / (D + 1); n++) { //index와 shortread 비교
@@ -191,15 +201,15 @@ int main() {
     ifstream fin;  //ifstream 형식 변수 선언
     cin >> L >> M >> N;
     char Nucleic[4] = { 'A','G','C','T' };
-    //fout.open("ref_" + to_string(N) + ".txt"); //해당 파일 열거나 없으면 생성
-    //random_device rd;  //비결정적 생성기
-    //mt19937 gen(rd()); //메르센 트위스터 시드 설정
-    //uniform_int_distribution<> dis(0, 3); //0부터 3으로 분포 설정
-    //for (int i = 0; i < N; i++) { //숫자만큼 반복하여 랜덤 수 생성한 뒤 문자열에 붙임
-    //    str += Nucleic[dis(gen)];
-    //}
-    //fout.write(str.c_str(), str.size()); //문자열 파일에 쓰기
-    //fout.close(); //파일 닫기
+    fout.open("ref_" + to_string(N) + ".txt"); //해당 파일 열거나 없으면 생성
+    random_device rd;  //비결정적 생성기
+    mt19937 gen(rd()); //메르센 트위스터 시드 설정
+    uniform_int_distribution<> dis(0, 3); //0부터 3으로 분포 설정
+    for (int i = 0; i < N; i++) { //숫자만큼 반복하여 랜덤 수 생성한 뒤 문자열에 붙임
+        str += Nucleic[dis(gen)];
+    }
+    fout.write(str.c_str(), str.size()); //문자열 파일에 쓰기
+    fout.close(); //파일 닫기
     
     //string sequence;  //문자열 저장할 변수 선언
     //fin.open("ref_"+to_string(N)+".txt"); //시퀀스 파일 열기
