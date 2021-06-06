@@ -205,9 +205,7 @@ int main() {
     //fin.open("ref_"+to_string(N)+".txt"); //시퀀스 파일 열기
     //getline(fin, sequence); //str 받아오기
     //MyDNA(sequence, Nucleic, N); //MyDNA 생성
-    ////MyDNA(sequence, Nucleic, 60, 30000);
     //ShortRead(L, M,N); //shortread 생성
-    ////   ShortRead(60, 30000);
     //fin.close(); //파일닫기
     
     cout << "Trivial Algorithm" << endl; //브루트포스
