@@ -5,7 +5,7 @@
 #include <random>
 #include <ctime>
 using namespace std;
-#define D 4 //미스매치 수
+#define D 2 //미스매치 수
 
 
 
