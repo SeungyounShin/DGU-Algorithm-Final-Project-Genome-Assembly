@@ -9,23 +9,21 @@
 using namespace std;
 //2018112005 컴퓨터공학과 신승윤
 
-string import(){
+string import(string path){
   string line;
-  ifstream file("testdna.txt");
+  ifstream file(path);
   getline (file,line);
   //cout << line << endl;
   file.close();
   return line;
 }
 
-void ShortRead(int L, int M) { //shortread 생성
+void ShortRead(int L, int M, string s) { //shortread 생성
     ofstream fout;
     ifstream fin;
-    string shortread, s;
+    string shortread;
     int idx;
     srand(time(NULL));
-    fin.open("testdna.txt"); //해당 파일 열거나 없으면 생성
-    getline(fin, s); //str 받아오기
     fout.open("shortread_" + to_string(L) + "_" + to_string(M) + ".txt"); //해당 파일 열거나 없으면 생성
     for (int i = 0; i < M; i++) {
         idx = rand() % (s.length() - L); //랜덤 위치 얻기
@@ -37,9 +35,9 @@ void ShortRead(int L, int M) { //shortread 생성
     fout.close(); //파일닫기
 }
 
-vector<string> importReads(int L, int M){
+vector<string> importReads(string path, int L, int M){
   vector<string> ret;
-  ifstream file("shortread_" + to_string(L) + "_" + to_string(M) + ".txt");
+  ifstream file(path);
 
   int count = 0;
   if(file.is_open()){
@@ -47,7 +45,7 @@ vector<string> importReads(int L, int M){
       string tmp;
       if(ret.size() == M) return ret;
       getline(file,tmp);
-      ret.push_back(tmp);
+      ret.push_back(tmp.substr(0,L));
       count++;
     }
   }
@@ -82,6 +80,8 @@ int overlap(string s1, string s2,int min_length){
 int overlap2(string s1, string s2,int min_length){
   int start = -1;
   //case 1 :: full overlap
+  // ------
+  // ------
   start = s1.find(s2);
   if(start > 0 && start < s1.length() && s1.length() > s2.length()){
     return start;
@@ -108,9 +108,9 @@ tuple <int,int,int> pick_maximal_overlap(vector <string> reads, int k, bool prnt
   int best_olen = 0;
   int reada, readb;
 
-  //if(print) cout << " pick maximal overlap :: reads " << endl;
-  //if(print) for(auto s : reads)cout << " " << s << endl;
-  //if(print) cout << "=====" << endl;
+  if(print) cout << " pick maximal overlap :: reads " << endl;
+  if(print) for(auto s : reads)cout << " " << s << endl;
+  if(print) cout << "=====" << endl;
 
   map <string, vector<string> > index;
   int cnt = 0;
@@ -126,23 +126,35 @@ tuple <int,int,int> pick_maximal_overlap(vector <string> reads, int k, bool prnt
 
   int i,j;i=0;j=0;
   int olenInd = 0;
+  int count = 0;
   string tmpa; string tmpb;
   for(auto r : reads){
     for(auto o : index[r.substr(r.length()-k,k)] ){
-      if(print)cout << " r,o :: "<< r << " " << o << endl;
+      count += 1;
+      //cout<< r.length() << " " << o.length() << endl;
+      if(print) cout << " r :: "<< r << " o ::" << o << " ||"<< endl;
       //if(print)cout << " sub min : " << r.substr(r.length()-k,k) << endl;
       //if(print)for(auto sub : index[r.substr(r.length()-k,k)]) cout << "    " << sub<<endl;
       if(r != o){
         bool flag = false;
         int olen = overlap2(r,o,k);
         int overlap = r.length() - olen;
+        int min_len = min(o.length(), r.length());
         if(olen == -1) overlap = 0;
-        if(print) cout << " + overlap " << overlap<< " > " << best_olen << " "<< olen << " "<< r << " "<<o<< " " << endl;
+        //if(print) cout << " + overlap " << overlap<< " > " << best_olen << " "<< olen << " "<< r << " "<<o<< " " << endl;
 
+        if(overlap >= min_len){
+          tmpa = r; tmpb = o;
+
+          //cout << r << " "<< o << endl;
+          best_olen = overlap;
+          olenInd = olen;
+          break;
+        }
         if(overlap > best_olen){
           tmpa = r; tmpb = o;
 
-          if(print) cout << "best overlap " << overlap<< " "<< r << " "<<o<< " " << endl;
+          //if(print) cout << "best overlap " << overlap<< " "<< r << " "<<o<< " " << endl;
           best_olen = overlap;
           olenInd = olen;
         }
@@ -153,17 +165,28 @@ tuple <int,int,int> pick_maximal_overlap(vector <string> reads, int k, bool prnt
   vector <string>::iterator iterb = find(reads.begin(), reads.end(), tmpb);
   reada = distance(reads.begin(), itera);
   readb = distance(reads.begin(), iterb);
+  //cout << " rept :: " << count << endl;
   return make_tuple(reada, readb, olenInd);
 }
 
 vector <string> greedySCS(vector <string> shortReads, int k){
-  bool print =true;
+  bool print =false;
   clock_t start = clock();
-  tuple<int,int,int> out = pick_maximal_overlap(shortReads, k, print);
+  int M = shortReads.size();
+  int L = shortReads[0].length();
+  tuple<int,int,int> out = pick_maximal_overlap(shortReads, k, false);
   int reada = get<0>(out); int readb = get<1>(out); int olen =get<2>(out);
   int count = 0;
   cout << shortReads[reada] << " " << shortReads[readb] << " "<<olen << endl;
   while(olen>-1 && shortReads.size() > 1){
+    // adaptive scheduling
+    if(count < M/10){
+      k = L-1;
+    }else if(count >= M/10 && count <M/2){
+      k = L-10;
+    }else{
+      k = L/2;
+    }
     cout << "progress :: "<<count << " "<< shortReads.size() << endl;
     if(print) cout << " [shortReads-before-erase] " << shortReads.size() <<endl;
     if(print) for(auto t : shortReads) cout << " " << t << endl;
@@ -201,36 +224,50 @@ vector <string> greedySCS(vector <string> shortReads, int k){
   }
   string ret = "";
   clock_t end = clock();
-  cout << "Time spend :: "<< end-start<<endl;
+  cout << "Time spend :: "<< (end-start)/1000000 <<endl;
   return shortReads;
 }
 
 int main(){
   int M, L,N;
-  L = 30;
-  M = 1000;
-  string ref = import();
+  N = 500000;
+  L = 100;
+  M = 110000;
+  string DIR_PATH = "./denovo/" + to_string(N) + "/" + to_string(L) + "_"+ to_string(M) +"/";
+  string ref = import(DIR_PATH + "mydna.txt");
   N = ref.length();
-  ShortRead(L, M);
-  vector<string> shortReads = importReads(L, M);
+  vector<string> shortReads = importReads(DIR_PATH + "shortread.txt",L, M);
 
   cout << " # of ShortReads :: "<< shortReads.size() << endl;
-  //string ref = "AGATAAATGGGCCCTGCG";
+  //string ref = "AGATAACTGGGCCCTACGGCAATATACGTACAATTTAGGA";
   //string arr[] = {"ACGGATGAGC", "GAGCGGA", "GAGCGAG"};
-  //string arr[] = {"AGATAACTG", "TAACTGGGC", "TAACTGGGCCC","AACTGGGC","TGGGCCCTACG"}; // Initialize vector with a string array
+  //string arr[] = {"AGATAACTG", "TAACTGGGC", "TAACTGGGCCC","AACTGGGC","TGGGCCCTACG","CCCTACGGCAA","CTACGGCAATATAC","CGGCAATATACGT","ATATACGTACAATTT","CGTACAATTTAGGA"}; // Initialize vector with a string array
   //vector<string> shortReads(arr, arr + sizeof(arr)/sizeof(string));
 
-  vector<string> recon = greedySCS(shortReads, 1);
+  vector<string> recon = greedySCS(shortReads, L-1);
   cout << " + recon size :: "<<recon.size() << endl;
 
   ofstream file("ref.txt");
   ofstream file2("recon_vec.txt");
+  ofstream file3("shortreads.txt");
   file << ref;
   for(auto r : recon){
       file2 << r << endl;
   }
+  for(auto s : shortReads){
+      file3 << s << endl;
+  }
   file.close();
   file2.close();
+  file3.close();
+
+  if(recon.size() == 1){
+    int matched = 0;
+    for(int i=0; i<N; i++){
+      if(ref[i] == recon[0][i]) matched++;
+    }
+    cout << matched << "/" << N << endl;
+  }
 
   return 0;
 }
