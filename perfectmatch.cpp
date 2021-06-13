@@ -15,7 +15,7 @@ vector<vector<int>> filltable(int L, int M,int N, vector<vector<int>> table) {//
     ifstream fin;
     string reference;
     int sumofascii = 0;
-    fin.open("ref_" + to_string(N) + ".txt");
+    fin.open("ref.txt");
     getline(fin, reference);
     for (int i = 0; i < reference.size(); i++) {
         for (int j = 0; j < L / (D + 1); j++) {
@@ -36,8 +36,8 @@ void perfectMatch(int L, int M, int N, vector<vector<int>> table) { //퍼펙트�
     int tmp = 0;
     int cnt = 0;
     int isExit = 0;
-    fin1.open("shortread_" + to_string(L) + "_" + to_string(M) + ".txt"); //해당 파일 열거나 없으면 생성
-    fin2.open("ref_" + to_string(N) + ".txt");
+    fin1.open("shortread.txt"); //해당 파일 열거나 없으면 생성
+    fin2.open("ref.txt");
     fout.open("Reconstruct_DNA_sequence_" + to_string(L) + "_" + to_string(M) + ".txt");
     string reconstruct;
     getline(fin2, reference);
@@ -96,7 +96,7 @@ void MyDNA(string s, char Nucleic[], int N) { //k 마다 1개씩 다르도록 se
     random_device rd;  //비결정적 생성기
     mt19937 gen(rd()); //메르센 트위스터 시드 설정
     uniform_int_distribution<> dis(0, s.length() - 1); //0부터 reference 길이만큼으로 분포 설정
-    fout.open("mydna_" + to_string(N) +".txt"); //해당 파일 열거나 없으면 생성
+    fout.open("mydna.txt"); //해당 파일 열거나 없으면 생성
     for (int i = 0; i < (s.length() * 0.01); i++) {
         change = dis(gen); //바꿀 자릿수
         idx = rand() % 4; //바꿀 문자 인덱스
@@ -119,9 +119,9 @@ void ShortRead(int L, int M,int N) { //shortread 생성
     string shortread, s;
     int idx;
     srand(time(NULL));
-    fin.open("mydna_" + to_string(N) + ".txt"); //해당 파일 열거나 없으면 생성
+    fin.open("mydna.txt"); //해당 파일 열거나 없으면 생성
     getline(fin, s); //str 받아오기
-    fout.open("shortread_" + to_string(L) + "_" + to_string(M) + ".txt"); //해당 파일 열거나 없으면 생성
+    fout.open("shortread.txt"); //해당 파일 열거나 없으면 생성
     for (int i = 0; i < M; i++) {
         idx = rand() % (s.length() - L); //랜덤 위치 얻기
         shortread = s.substr(idx, L);
@@ -137,8 +137,8 @@ void Reconstruct(int L, int M, int N) { //brute force 로 복원하는 함수
     ifstream fin1, fin2;  //ifstream 형식 변수 선언
     string shortread, reference;
     int cnt; // miss match count 변수
-    fin1.open("shortread_" + to_string(L) + "_" + to_string(M) + ".txt");
-    fin2.open("ref_" + to_string(N) + ".txt");
+    fin1.open("shortread.txt");
+    fin2.open("ref.txt");
     fout.open("Reconstruct_DNA_sequence_" + to_string(L) + "_" + to_string(M) + ".txt");
     getline(fin2, reference);
     string reconstruct;
@@ -170,7 +170,7 @@ void Result(int L, int M,int N) { //일치율 출력
     ifstream fin1, fin2;  //ifstream 형식 변수 선언
     string mydna, reconstruct;
     int cnt = 0; //틀린 개수 count
-    fin1.open("mydna_" + to_string(N) + ".txt"); //해당 파일 열거나 없으면 생성
+    fin1.open("mydna.txt"); //해당 파일 열거나 없으면 생성
     fin2.open("Reconstruct_DNA_sequence_" + to_string(L) + "_" + to_string(M) + ".txt");
     getline(fin1, mydna);
     getline(fin2, reconstruct);
@@ -203,12 +203,12 @@ int main() {
     //fout.write(str.c_str(), str.size()); //문자열 파일에 쓰기
     //fout.close(); //파일 닫기
     
-    string sequence;  //문자열 저장할 변수 선언
-    fin.open("ref_"+to_string(N)+".txt"); //시퀀스 파일 열기
-    getline(fin, sequence); //str 받아오기
-    MyDNA(sequence, Nucleic, N); //MyDNA 생성
-    ShortRead(L, M,N); //shortread 생성
-    fin.close(); //파일닫기
+    //string sequence;  //문자열 저장할 변수 선언
+    //fin.open("ref.txt"); //시퀀스 파일 열기
+    //getline(fin, sequence); //str 받아오기
+    //MyDNA(sequence, Nucleic, N); //MyDNA 생성
+    //ShortRead(L, M,N); //shortread 생성
+    //fin.close(); //파일닫기
     
     cout << "Trivial Algorithm" << endl; //브루트포스
     start = clock();
